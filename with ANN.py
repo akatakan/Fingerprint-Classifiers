@@ -1,10 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils import shuffle
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.preprocessing import StandardScaler
+
 
 
 num_features=3302
@@ -23,7 +23,8 @@ dataset = pd.read_csv("otu.csv",encoding="utf8",dtype="unicode")
 dataset = dataset.T
 
 #Sıralı veriyi karıştırır
-dataset=shuffle(dataset)
+dataset = dataset.sample(frac = 1).reset_index(drop=True)
+
 X= dataset.iloc[:, 1:].astype("float64").to_numpy()
 y = le.fit_transform(dataset.iloc[:, 0])
 
@@ -44,6 +45,7 @@ model.compile(
 
 
 accs =list()
+losses = list()
 for f,(train_idx,test_idx) in enumerate(kfold.split(X,y)):
     print("Fold ",f+1)
     X_train,X_test = X[train_idx],X[test_idx]
@@ -62,9 +64,11 @@ for f,(train_idx,test_idx) in enumerate(kfold.split(X,y)):
 
     print("Fold Acc: ",accuracy)
     accs.append(accuracy)
+    losses.append(loss)
 
 
 print("Mean Acc: ", sum(accs)/len(accs))
+print("Mean Loss: ", sum(losses)/len(losses))
 
 
 from sklearn.metrics import classification_report
